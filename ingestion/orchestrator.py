@@ -20,7 +20,8 @@ from ingestion.dedup import deduplicate
 from ingestion.sources.company_watcher import run_company_watcher
 from ingestion.sources.jsearch import JSearchClient
 from ingestion.sources.adzuna import AdzunaClient
-from ingestion.sources.normalize import normalize_jsearch, normalize_adzuna
+from ingestion.sources.usajobs import USAJobsClient
+from ingestion.sources.normalize import normalize_jsearch, normalize_adzuna, normalize_usajobs
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +82,16 @@ def _init_clients(api_config: dict) -> dict:
             log.info("API enabled: Adzuna")
         else:
             log.warning("Adzuna enabled but credentials not set — skipping.")
+
+    usajobs_cfg = api_config.get("usajobs", {})
+    if usajobs_cfg.get("enabled"):
+        email   = usajobs_cfg.get("email") or config.USAJOBS_EMAIL
+        api_key = usajobs_cfg.get("api_key") or config.USAJOBS_API_KEY
+        if email and api_key and api_key not in ("", "YOUR_USAJOBS_API_KEY"):
+            clients["usajobs"] = USAJobsClient(email, api_key)
+            log.info("API enabled: USAJobs")
+        else:
+            log.warning("USAJobs enabled but credentials not set — skipping.")
 
     return clients
 
@@ -158,6 +169,8 @@ def run(
                             log.info(f"    {api_name}: {len(raw)} results")
                             if api_name == "jsearch":
                                 normalised = [normalize_jsearch(r, profile, query) for r in raw]
+                            elif api_name == "usajobs":
+                                normalised = [normalize_usajobs(r, query) for r in raw]
                             else:
                                 normalised = [normalize_adzuna(r, profile, query) for r in raw]
                             all_normalised.extend(normalised)

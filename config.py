@@ -50,6 +50,8 @@ SEED_ON_STARTUP: bool = os.environ.get("SEED_ON_STARTUP", "false").lower() == "t
 JSEARCH_API_KEY: str = os.environ.get("JSEARCH_API_KEY", "")
 ADZUNA_APP_ID: str = os.environ.get("ADZUNA_APP_ID", "")
 ADZUNA_APP_KEY: str = os.environ.get("ADZUNA_APP_KEY", "")
+USAJOBS_EMAIL: str = os.environ.get("USAJOBS_EMAIL", "")
+USAJOBS_API_KEY: str = os.environ.get("USAJOBS_API_KEY", "")
 
 # Path to the search_config.json that controls queries, companies, and filters
 INGESTION_SEARCH_CONFIG: str = os.environ.get(

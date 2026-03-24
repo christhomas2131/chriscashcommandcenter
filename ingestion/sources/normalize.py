@@ -95,6 +95,56 @@ def normalize_jsearch(raw: dict, profile: dict, query: str) -> dict:
     }
 
 
+def normalize_usajobs(raw: dict, query: str) -> dict:
+    """Normalize a USAJobs SearchResultItem."""
+    obj      = raw.get("MatchedObjectDescriptor", {})
+    title    = (obj.get("PositionTitle") or "").strip()
+    company  = (obj.get("OrganizationName") or "").strip()
+    location = (obj.get("PositionLocationDisplay") or "").strip()
+    job_url  = (obj.get("PositionURI") or "").strip()
+    ext_id   = (obj.get("PositionID") or "").strip()
+
+    # Salary
+    rem = obj.get("PositionRemuneration", [{}])
+    sal_min = to_annual_salary(rem[0].get("MinimumRange")) if rem else None
+    sal_max = to_annual_salary(rem[0].get("MaximumRange")) if rem else None
+
+    # Work type — USAJobs has a Telework field
+    details   = obj.get("UserArea", {}).get("Details", {})
+    telework  = (details.get("Telework") or "").lower()
+    if "full" in telework or "100" in telework:
+        work_type = "Remote"
+    elif "eligible" in telework or "partial" in telework:
+        work_type = "Hybrid"
+    else:
+        work_type = detect_work_type(f"{title} {location}")
+
+    desc = (details.get("JobSummary") or "").strip()
+
+    # Priority — federal consulting firms are High
+    high_orgs = ["fema", "hud", "epa", "cdbg", "usace", "army corps"]
+    priority = "High" if any(o in company.lower() for o in high_orgs) else "Medium"
+
+    return {
+        "company_name":       company,
+        "role_title":         title,
+        "status":             "Researching",
+        "date_added":         date.today(),
+        "date_applied":       None,
+        "salary_min":         sal_min,
+        "salary_max":         sal_max,
+        "location":           location,
+        "work_type":          work_type,
+        "source":             "USAJobs",
+        "job_url":            job_url,
+        "notes":              f'Imported via USAJobs — query: "{query}"',
+        "priority":           priority,
+        "external_job_id":    ext_id,
+        "description_raw":    desc,
+        "dedupe_fingerprint": make_fingerprint(company, title, job_url),
+    }
+
+
 def normalize_adzuna(raw: dict, profile: dict, query: str) -> dict:
     company  = (raw.get("company", {}).get("display_name") or "").strip()
     title    = (raw.get("title") or "").strip()

@@ -451,10 +451,10 @@ def page_overview():
     col_l, col_r = st.columns([3, 2])
     with col_l:
         st.markdown("### Applications Over Time")
-        st.plotly_chart(ch.applications_over_time_chart(db.get_applications_over_time()), use_container_width=True)
+        st.plotly_chart(ch.applications_over_time_chart(db.get_applications_over_time()), use_container_width=True, key="ov_apps_over_time")
     with col_r:
         st.markdown("### Status Breakdown")
-        st.plotly_chart(ch.status_breakdown_chart(db.get_status_counts()), use_container_width=True)
+        st.plotly_chart(ch.status_breakdown_chart(db.get_status_counts()), use_container_width=True, key="ov_status_breakdown")
 
     st.markdown("---")
 
@@ -954,7 +954,7 @@ def page_analytics():
     c1, c2 = st.columns([2, 1])
     with c1:
         st.markdown("### Application Funnel")
-        st.plotly_chart(ch.funnel_chart(status_counts), use_container_width=True)
+        st.plotly_chart(ch.funnel_chart(status_counts), use_container_width=True, key="an_funnel")
     with c2:
         st.markdown("### Conversion Rates")
         stages_interviewed = ["Interview", "Technical Assessment", "Final Round", "Offer"]
@@ -981,7 +981,7 @@ def page_analytics():
 
     # Source analysis
     st.markdown("### Applications by Source")
-    st.plotly_chart(ch.source_chart(db.get_source_stats()), use_container_width=True)
+    st.plotly_chart(ch.source_chart(db.get_source_stats()), use_container_width=True, key="an_source")
 
     st.markdown("---")
 
@@ -989,13 +989,13 @@ def page_analytics():
 
     with col_a:
         st.markdown("### Avg Time in Each Stage (Days Since Added)")
-        st.plotly_chart(ch.avg_time_chart(db.get_avg_time_in_stages()), use_container_width=True)
+        st.plotly_chart(ch.avg_time_chart(db.get_avg_time_in_stages()), use_container_width=True, key="an_avg_time")
 
     with col_b:
         st.markdown("### Salary Range Distribution")
         sfig = ch.salary_distribution_chart(jobs)
         if sfig:
-            st.plotly_chart(sfig, use_container_width=True)
+            st.plotly_chart(sfig, use_container_width=True, key="an_salary")
         else:
             st.info("Add salary data to jobs to see this chart.")
 
@@ -1005,7 +1005,7 @@ def page_analytics():
     rt_data = db.get_response_times()
     rt_fig  = ch.response_time_chart(rt_data)
     if rt_fig:
-        st.plotly_chart(rt_fig, use_container_width=True)
+        st.plotly_chart(rt_fig, use_container_width=True, key="an_response_time")
     else:
         st.info(
             "No response time data yet. Set the **First Response Date** on a job "

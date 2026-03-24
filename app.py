@@ -1471,7 +1471,7 @@ def page_ingestion():
         m1, m2, m3, m4, m5 = st.columns(5)
         with m1:
             st.markdown(
-                f'<div class="metric-card"><div class="metric-value" style="color:{status_color}">'
+                f'<div class="metric-card"><div class="metric-value" style="color:{status_color};font-size:1.4rem;">'
                 f'{status}</div><div class="metric-label">Last Status</div></div>',
                 unsafe_allow_html=True,
             )

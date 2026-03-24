@@ -415,15 +415,30 @@ def get_weekly_applied_count() -> int:
 # New Leads / triage
 # ---------------------------------------------------------------------------
 
-def get_new_leads(days: int = 7) -> list[dict]:
+def get_new_leads(days: int = 7, sort_by: str = "imported_desc") -> list[dict]:
+    """
+    sort_by options:
+      imported_desc  — most recently added to DB first (created_at DESC)
+      imported_asc   — oldest import first (created_at ASC)
+      date_added_desc — job posting date newest first
+      priority       — High → Medium, then created_at DESC
+    """
     cutoff = date.today() - timedelta(days=days)
+
+    order_clause = {
+        "imported_desc":   "created_at DESC NULLS LAST",
+        "imported_asc":    "created_at ASC NULLS LAST",
+        "date_added_desc": "date_added DESC",
+        "priority":        "CASE priority WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END, created_at DESC NULLS LAST",
+    }.get(sort_by, "created_at DESC NULLS LAST")
+
     with cursor() as cur:
-        cur.execute("""
+        cur.execute(f"""
             SELECT * FROM jobs
             WHERE status = 'Researching'
               AND priority != 'Low'
               AND date_added >= %s
-            ORDER BY date_added DESC
+            ORDER BY {order_clause}
         """, (cutoff,))
         return [dict(r) for r in cur.fetchall()]
 

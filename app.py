@@ -1062,29 +1062,49 @@ def page_new_leads():
 
     last_run = get_last_scraper_run()
     if last_run:
-        st.caption(f"Last scraper run: {last_run.strftime('%B %d, %Y at %H:%M')}")
+        st.caption(f"Last ingestion: {last_run.strftime('%B %d, %Y at %H:%M')}")
     else:
-        st.caption("No scraper runs found. Run `python job-scraper/job_scraper.py` to fetch new leads.")
+        st.caption("No ingestion runs yet. Use the Ingestion page to pull fresh listings.")
 
     st.markdown("---")
 
-    leads = db.get_new_leads(days=7)
+    # ── Controls ──────────────────────────────────────────────────────────
+    ctrl1, ctrl2, ctrl3 = st.columns([3, 3, 1])
+    with ctrl1:
+        filter_opt = st.radio(
+            "Role type",
+            ["All", "DR/EM", "Tech Pivot"],
+            horizontal=True,
+        )
+    with ctrl2:
+        sort_opt = st.radio(
+            "Sort by",
+            ["Newest Import", "Oldest Import", "Priority", "Date Posted"],
+            horizontal=True,
+        )
+    with ctrl3:
+        days_opt = st.selectbox(
+            "Lookback",
+            [7, 14, 30, 60, 90],
+            format_func=lambda d: f"{d}d",
+        )
+
+    sort_map = {
+        "Newest Import": "imported_desc",
+        "Oldest Import": "imported_asc",
+        "Priority":      "priority",
+        "Date Posted":   "date_added_desc",
+    }
+
+    leads = db.get_new_leads(days=days_opt, sort_by=sort_map[sort_opt])
 
     if not leads:
-        st.info("No new leads in the last 7 days. Run the job scraper to pull in fresh listings.")
+        st.info(f"No new leads in the last {days_opt} days.")
         return
 
-    filter_opt = st.radio(
-        "Filter",
-        ["All New", "DR/EM Roles", "Tech Pivot Roles"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-    st.markdown("")
-
-    if filter_opt == "DR/EM Roles":
+    if filter_opt == "DR/EM":
         leads = [j for j in leads if _lead_matches(j, _DR_KEYWORDS)]
-    elif filter_opt == "Tech Pivot Roles":
+    elif filter_opt == "Tech Pivot":
         leads = [j for j in leads if _lead_matches(j, _TECH_KEYWORDS)]
 
     if not leads:
@@ -1102,8 +1122,27 @@ def page_new_leads():
         if salary_str != "—":    meta_parts.append(salary_str)
         if job.get("source"):    meta_parts.append(f"via {job['source']}")
 
-        pc = PRIORITY_COLORS.get(job.get("priority", "Medium"), "#6B7280")
         added = job.get("date_added", "")
+
+        # Format imported-at timestamp
+        imported_at = job.get("created_at")
+        if imported_at:
+            if not isinstance(imported_at, datetime):
+                try:
+                    imported_at = datetime.fromisoformat(str(imported_at))
+                except Exception:
+                    imported_at = None
+        if imported_at:
+            delta = datetime.now(imported_at.tzinfo) - imported_at if imported_at.tzinfo else datetime.now() - imported_at
+            hours = int(delta.total_seconds() // 3600)
+            if hours < 1:
+                imported_str = "imported just now"
+            elif hours < 24:
+                imported_str = f"imported {hours}h ago"
+            else:
+                imported_str = f"imported {delta.days}d ago"
+        else:
+            imported_str = f"added {added}"
 
         with st.expander(f"{job['company_name']}  —  {job['role_title']}", expanded=True):
             col_info, col_actions = st.columns([3, 2])
@@ -1126,7 +1165,7 @@ def page_new_leads():
                 st.markdown(
                     f'<div style="margin-top:4px;">'
                     + priority_badge(job.get("priority", "Medium"))
-                    + f'<span style="color:#6B7280;font-size:0.75rem;margin-left:8px;">Added {added}</span>'
+                    + f'<span style="color:#6B7280;font-size:0.75rem;margin-left:8px;">{imported_str}</span>'
                     + "</div>",
                     unsafe_allow_html=True,
                 )
@@ -1139,17 +1178,17 @@ def page_new_leads():
                 with b1:
                     if st.button("Interested", key=f"nl_int_{job['id']}", use_container_width=True, type="primary"):
                         db.triage_job(job["id"], "Ready to Apply", "High")
-                        st.toast(f"Moved to Ready to Apply", icon="✅")
+                        st.toast("Moved to Ready to Apply", icon="✅")
                         st.rerun()
                 with b2:
                     if st.button("Maybe\nLater", key=f"nl_maybe_{job['id']}", use_container_width=True):
                         db.triage_job(job["id"], "Researching", "Low")
-                        st.toast(f"Snoozed", icon="💤")
+                        st.toast("Snoozed", icon="💤")
                         st.rerun()
                 with b3:
                     if st.button("Not a\nFit", key=f"nl_nope_{job['id']}", use_container_width=True):
                         db.triage_job(job["id"], "Withdrawn")
-                        st.toast(f"Dismissed", icon="👋")
+                        st.toast("Dismissed", icon="👋")
                         st.rerun()
 
 

@@ -29,7 +29,7 @@ class USAJobsClient:
         }
 
     def search(self, keyword: str, num_results: int = 25, days_posted: int = 30,
-               remote_only: bool = False) -> list[dict]:
+               remote_only: bool = False, location: str | None = None) -> list[dict]:
         results = []
         page    = 1
         per_page = min(num_results, 25)
@@ -43,6 +43,8 @@ class USAJobsClient:
             }
             if remote_only:
                 params["RemoteIndicator"] = "True"
+            if location:
+                params["LocationDescriptions"] = location
 
             try:
                 resp = requests.get(_BASE_URL, headers=self.headers, params=params, timeout=15)

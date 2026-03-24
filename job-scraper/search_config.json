@@ -14,7 +14,20 @@
     "usajobs": {
       "enabled": true,
       "email": "chrisball2141@gmail.com",
-      "api_key": "+fbRHVR6E5us3+8DTxyUTl/Nv+xoEmnnVsp+WF9dehU="
+      "api_key": "+fbRHVR6E5us3+8DTxyUTl/Nv+xoEmnnVsp+WF9dehU=",
+      "location": "California",
+      "extra_queries": [
+        {"keyword": "FEMA disaster recovery"},
+        {"keyword": "CDBG-DR program manager"},
+        {"keyword": "emergency management specialist"},
+        {"keyword": "hazard mitigation specialist"},
+        {"keyword": "floodplain manager"},
+        {"keyword": "public assistance officer FEMA"},
+        {"keyword": "grants management specialist HUD"},
+        {"keyword": "homeland security emergency management"},
+        {"keyword": "disaster recovery program analyst"},
+        {"keyword": "resilience planning coordinator"}
+      ]
     }
   },
   "search_profiles": [
@@ -61,6 +74,27 @@
         "Asana"
       ],
       "default_priority": "Medium"
+    },
+    {
+      "name": "Bay Area / California",
+      "queries": [
+        "emergency management San Francisco Bay Area",
+        "disaster recovery manager San Francisco",
+        "program manager Oakland California",
+        "grants management California",
+        "implementation consultant San Francisco",
+        "customer success manager San Francisco",
+        "project manager Bay Area hybrid",
+        "government consulting Bay Area"
+      ],
+      "target_companies": [
+        "Hagerty Consulting",
+        "ICF",
+        "Guidehouse",
+        "Deloitte",
+        "KPMG"
+      ],
+      "default_priority": "High"
     }
   ],
   "target_companies": [

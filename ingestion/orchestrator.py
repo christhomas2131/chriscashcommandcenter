@@ -182,6 +182,27 @@ def run(
 
             report["profiles_run"] = len(profiles)
 
+        # ── USAJobs extra (federal-specific) queries ───────────────────────
+        usajobs_client = clients.get("usajobs")
+        if usajobs_client:
+            usajobs_cfg   = api_config.get("usajobs", {})
+            extra_queries = usajobs_cfg.get("extra_queries", [])
+            location      = usajobs_cfg.get("location")
+            for eq in extra_queries:
+                keyword = eq.get("keyword", "")
+                if not keyword:
+                    continue
+                log.info(f'  USAJobs extra: "{keyword}"')
+                try:
+                    raw = usajobs_client.search(keyword, max_per_query, days_posted, location=location)
+                    log.info(f"    usajobs: {len(raw)} results")
+                    all_normalised.extend([normalize_usajobs(r, keyword) for r in raw])
+                    report["queries_executed"] += 1
+                    time.sleep(0.5)
+                except Exception as exc:
+                    log.error(f"    USAJobs extra error ('{keyword}'): {exc}")
+                    report["error_count"] += 1
+
         # ── Company watcher ────────────────────────────────────────────────
         company_jobs: list[dict] = []
         if companies:

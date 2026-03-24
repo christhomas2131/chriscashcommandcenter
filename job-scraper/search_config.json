@@ -12,9 +12,9 @@
       "country": "us"
     },
     "usajobs": {
-      "enabled": false,
-      "email": "YOUR_EMAIL",
-      "api_key": "YOUR_USAJOBS_API_KEY"
+      "enabled": true,
+      "email": "chrisball2141@gmail.com",
+      "api_key": "+fbRHVR6E5us3+8DTxyUTl/Nv+xoEmnnVsp+WF9dehU="
     }
   },
   "search_profiles": [

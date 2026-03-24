@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python -m streamlit run app.py --server.port 8501)",
+      "Bash(python -c \"import charts; print\\(''charts.py imports OK''\\); f = charts.applications_over_time_chart\\([{''week'':''2026-12'',''count'':3}]\\); print\\(''chart renders OK''\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(python job_scraper.py --dry-run)",
+      "Bash(python job_scraper.py --import-csv \"../job-import-batch.csv\")",
+      "Bash(python job_scraper.py --import-csv \"../job-import-batch.csv\" --dry-run)",
+      "Bash(python job_scraper.py --force)",
+      "Bash(python -c \"import database; import app\")",
+      "Bash(python -m streamlit run app.py --server.headless true)",
+      "Bash(python:*)",
+      "Bash(netstat -ano)"
+    ]
+  }
+}

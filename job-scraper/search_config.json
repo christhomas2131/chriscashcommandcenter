@@ -1,0 +1,125 @@
+{
+  "apis": {
+    "jsearch": {
+      "enabled": true,
+      "api_key": "12dfe912cdmsh0318cb30fddba42p1311b7jsn8f0271c2a9bd",
+      "base_url": "https://jsearch.p.rapidapi.com"
+    },
+    "adzuna": {
+      "enabled": false,
+      "app_id": "YOUR_ADZUNA_APP_ID",
+      "app_key": "YOUR_ADZUNA_KEY",
+      "country": "us"
+    }
+  },
+  "search_profiles": [
+    {
+      "name": "Disaster Recovery / Emergency Management",
+      "queries": [
+        "disaster recovery consultant remote",
+        "FEMA public assistance specialist",
+        "emergency management consultant remote",
+        "disaster recovery project manager",
+        "grant management specialist FEMA",
+        "hazard mitigation project manager"
+      ],
+      "target_companies": [
+        "Hagerty Consulting",
+        "ICF",
+        "Tetra Tech",
+        "Tidal Basin",
+        "AC Disaster Consulting",
+        "Witt O'Brien's",
+        "Guidehouse",
+        "AECOM",
+        "Stantec",
+        "CDM Smith"
+      ],
+      "default_priority": "High"
+    },
+    {
+      "name": "Tech Pivot - Implementation / Customer Success",
+      "queries": [
+        "implementation consultant remote",
+        "customer success manager SaaS remote",
+        "implementation specialist remote",
+        "onboarding consultant remote",
+        "solutions consultant remote"
+      ],
+      "target_companies": [
+        "Salesforce",
+        "ServiceTitan",
+        "Plaid",
+        "monday.com",
+        "Notion",
+        "PagerDuty",
+        "Asana"
+      ],
+      "default_priority": "Medium"
+    }
+  ],
+  "target_companies": [
+    {
+      "name": "Fors Marsh Group",
+      "ats": "breezy",
+      "slug": "fors-marsh-group"
+    },
+    {
+      "name": "Dewberry",
+      "ats": "icims",
+      "subdomain": "careers-dewberry"
+    },
+    {
+      "name": "Palantir",
+      "ats": "lever",
+      "slug": "palantir"
+    },
+    {
+      "name": "ICF",
+      "ats": "workday",
+      "tenant": "icf",
+      "wd_num": 5,
+      "site": "ICFExternal_Career_Site"
+    },
+    {
+      "name": "Witt O'Brien's",
+      "ats": "workday",
+      "tenant": "wittobriens",
+      "wd_num": 12,
+      "site": "Careers"
+    },
+    {
+      "name": "EisnerAmper",
+      "ats": "workday",
+      "tenant": "eisneramper",
+      "wd_num": 1,
+      "site": "EisnerAmper_External"
+    },
+    {
+      "name": "Cherry Bekaert",
+      "ats": "workday",
+      "tenant": "cbh",
+      "wd_num": 12,
+      "site": "CherryBekaert"
+    },
+    {
+      "name": "KPMG",
+      "ats": "kpmg",
+      "search_terms": ["disaster recovery", "grants management", "floodplain"]
+    },
+    {
+      "name": "Deloitte",
+      "ats": "deloitte",
+      "search_terms": ["disaster recovery", "grants management", "floodplain", "emergency management", "hazard mitigation"]
+    }
+  ],
+  "filters": {
+    "work_types": ["Remote", "Hybrid"],
+    "exclude_keywords": [
+      "senior director", "VP", "vice president", "CTO", "intern", "internship"
+    ],
+    "min_salary": 60000,
+    "max_results_per_query": 20,
+    "days_posted": 30
+  }
+}

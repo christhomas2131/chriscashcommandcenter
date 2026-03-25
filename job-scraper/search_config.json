@@ -1,14 +1,14 @@
 {
   "apis": {
     "jsearch": {
-      "enabled": true,
+      "enabled": false,
       "api_key": "12dfe912cdmsh0318cb30fddba42p1311b7jsn8f0271c2a9bd",
       "base_url": "https://jsearch.p.rapidapi.com"
     },
     "adzuna": {
-      "enabled": false,
-      "app_id": "YOUR_ADZUNA_APP_ID",
-      "app_key": "YOUR_ADZUNA_KEY",
+      "enabled": true,
+      "app_id": "d1787b78",
+      "app_key": "ec1c535043c22def6364dbe1e3a845c0",
       "country": "us"
     },
     "usajobs": {

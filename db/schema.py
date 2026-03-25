@@ -5,7 +5,8 @@ Call migrate() once at app startup and once at the start of each ingestion run.
 All statements use IF NOT EXISTS / ADD COLUMN IF NOT EXISTS so re-running is safe.
 """
 
-from db.connection import cursor
+import psycopg2
+from db.connection import cursor, close_pool
 
 # ---------------------------------------------------------------------------
 # DDL — existing tables (ported from SQLite)
@@ -183,11 +184,7 @@ _SAFE_MIGRATIONS = [
 # migrate()
 # ---------------------------------------------------------------------------
 
-def migrate() -> None:
-    """
-    Create all tables and apply column additions idempotently.
-    Safe to call on every startup.
-    """
+def _run_migrate() -> None:
     ddl_statements = [
         _JOBS, _CONTACTS, _FOLLOW_UPS, _INTERVIEW_STAGES, _SETTINGS,
         _INGESTION_RUNS, _JOB_ANALYSIS, _RESUME_PROFILES,
@@ -205,3 +202,15 @@ def migrate() -> None:
                 cur.execute("RELEASE SAVEPOINT safe_migration")
             except Exception:
                 cur.execute("ROLLBACK TO SAVEPOINT safe_migration")
+
+
+def migrate() -> None:
+    """
+    Create all tables and apply column additions idempotently.
+    Retries once on stale/dropped connections before raising.
+    """
+    try:
+        _run_migrate()
+    except (psycopg2.InterfaceError, psycopg2.OperationalError):
+        close_pool()
+        _run_migrate()  # second attempt with a fresh pool

@@ -391,9 +391,7 @@ def page_overview():
     jobs = db.get_all_jobs()
     today = date.today()
 
-    SUBMITTED_STATUSES = {"Applied", "Phone Screen", "Interview", "Technical Assessment",
-                          "Final Round", "Offer", "Rejected", "Ghosted"}
-    submitted_jobs = [j for j in jobs if j["status"] in SUBMITTED_STATUSES]
+    submitted_jobs = [j for j in jobs if j["status"] == "Applied"]
     upcoming_fu, upcoming_interviews = db.get_upcoming_items(7)
     offers = sum(1 for j in jobs if j["status"] == "Offer")
     applied = len(submitted_jobs)
@@ -458,20 +456,42 @@ def page_overview():
 
     st.markdown("---")
 
+    # --- Search ---
+    ov_search = st.text_input("Search jobs", placeholder="Company, title, or location…", key="ov_search")
+
     # --- Kanban ---
     st.markdown("### Pipeline")
     kanban_order = ["Researching", "Ready to Apply", "Applied", "Phone Screen",
                     "Interview", "Technical Assessment", "Final Round", "Offer"]
+
+    pipeline_jobs = jobs
+    if ov_search:
+        q = ov_search.lower()
+        pipeline_jobs = [
+            j for j in jobs
+            if q in j.get("company_name", "").lower()
+            or q in j.get("role_title", "").lower()
+            or q in (j.get("location") or "").lower()
+        ]
+
     by_status = {s: [] for s in kanban_order}
-    for j in jobs:
+    for j in pipeline_jobs:
         if j["status"] in by_status:
             by_status[j["status"]].append(j)
+
+    _KANBAN_PAGE_INIT = 10
+    _KANBAN_PAGE_STEP = 20
 
     visible = [(s, by_status[s]) for s in kanban_order if by_status[s]]
     if visible:
         cols = st.columns(len(visible))
         for col, (status, sjobs) in zip(cols, visible):
             color = STATUS_COLORS.get(status, "#6B7280")
+            state_key = f"kanban_show_{status}"
+            if state_key not in st.session_state:
+                st.session_state[state_key] = _KANBAN_PAGE_INIT
+            shown = st.session_state[state_key]
+
             with col:
                 st.markdown(
                     f'<div style="border-top:3px solid {color};padding-top:8px;margin-bottom:10px;">'
@@ -480,7 +500,7 @@ def page_overview():
                     f'</div>',
                     unsafe_allow_html=True,
                 )
-                for j in sjobs:
+                for j in sjobs[:shown]:
                     pc = PRIORITY_COLORS.get(j["priority"], "#6B7280")
                     st.markdown(
                         f'<div class="job-card">'
@@ -513,6 +533,16 @@ def page_overview():
                             if st.button("No", key=f"ov_no_{j['id']}", use_container_width=True):
                                 st.session_state.pop(f"ov_confirm_{j['id']}", None)
                                 st.rerun()
+
+                remaining = len(sjobs) - shown
+                if remaining > 0:
+                    if st.button(
+                        f"Show {min(remaining, _KANBAN_PAGE_STEP)} more ({remaining} remaining)",
+                        key=f"kanban_more_{status}",
+                        use_container_width=True,
+                    ):
+                        st.session_state[state_key] += _KANBAN_PAGE_STEP
+                        st.rerun()
     else:
         st.info("No active applications yet. Click **Add / Edit Job** to get started.")
 
@@ -634,10 +664,18 @@ def _job_form(job=None, job_id=None, prefill=None):
             st.error("Company name and role title are required.")
             return None
 
+        # Auto-promote to Applied if a date was checked and status is still pre-apply
+        _PRE_APPLY = {"Researching", "Ready to Apply"}
+        effective_status = (
+            "Applied"
+            if applied_checked and date_applied and status in _PRE_APPLY
+            else status
+        )
+
         data = {
             "company_name": company_name.strip(),
             "role_title":   role_title.strip(),
-            "status":       status,
+            "status":       effective_status,
             "priority":     priority,
             "location":     location.strip() or None,
             "work_type":    work_type,
@@ -1096,6 +1134,8 @@ def page_new_leads():
         "Date Posted":   "date_added_desc",
     }
 
+    nl_search = st.text_input("Search leads", placeholder="Company, title, or location…", key="nl_search")
+
     leads = db.get_new_leads(days=days_opt, sort_by=sort_map[sort_opt])
 
     if not leads:
@@ -1106,6 +1146,15 @@ def page_new_leads():
         leads = [j for j in leads if _lead_matches(j, _DR_KEYWORDS)]
     elif filter_opt == "Tech Pivot":
         leads = [j for j in leads if _lead_matches(j, _TECH_KEYWORDS)]
+
+    if nl_search:
+        q = nl_search.lower()
+        leads = [
+            j for j in leads
+            if q in j.get("company_name", "").lower()
+            or q in j.get("role_title", "").lower()
+            or q in (j.get("location") or "").lower()
+        ]
 
     if not leads:
         st.info("No leads match this filter.")

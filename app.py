@@ -1604,21 +1604,49 @@ def page_ingestion():
 # Router
 # ---------------------------------------------------------------------------
 
-st.markdown("""
-<div style="
+import base64 as _b64
+_face_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "chris_face.png")
+_face_b64 = ""
+if os.path.exists(_face_path):
+    with open(_face_path, "rb") as _f:
+        _face_b64 = _b64.b64encode(_f.read()).decode()
+_img_tag = f'<img src="data:image/png;base64,{_face_b64}" style="height:96px;width:auto;object-fit:contain;opacity:0.92;display:block;margin:0;padding:0;vertical-align:bottom;">' if _face_b64 else ""
+
+st.markdown(f"""
+<style>
+    div[data-testid="stMarkdownContainer"]:has(#header-banner) {{
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 0;
+    }}
+</style>
+<div id="header-banner" style="
     background: linear-gradient(90deg, #1a0533, #0a1628, #1a0533);
+    border-top: 2px solid #7C3AED;
     border-bottom: 2px solid #7C3AED;
-    padding: 18px 24px;
-    text-align: center;
-    letter-spacing: 0.18em;
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #F9FAFB;
-    text-shadow: 0 0 20px #7C3AED, 0 0 40px #3B82F6;
-    margin-bottom: 8px;
-    font-family: monospace;
+    padding: 0;
+    margin: 0 -1rem 8px -1rem;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    line-height: 0;
+    overflow: hidden;
 ">
-    CHRI$$$ CA$H FLOW COMMAND CENTER
+    {_img_tag}
+    <div style="
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 0.18em;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #F9FAFB;
+        text-shadow: 0 0 20px #7C3AED, 0 0 40px #3B82F6;
+        font-family: monospace;
+        line-height: normal;
+    ">CHRI$$$ CA$H FLOW COMMAND CENTER</div>
+    {_img_tag}
 </div>
 """, unsafe_allow_html=True)
 

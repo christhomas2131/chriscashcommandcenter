@@ -48,17 +48,40 @@ def get_conn() -> Generator:
     """
     Yield a pooled Postgres connection.
     Commits on clean exit, rolls back on exception, always returns to pool.
+    Handles stale/closed connections by resetting the pool automatically.
     """
     pool = _get_pool()
     conn = pool.getconn()
+
+    # If the pooled connection is already closed (e.g. idle timeout), reset the
+    # entire pool so every subsequent caller also gets a fresh connection.
+    if conn.closed:
+        try:
+            pool.putconn(conn)
+        except Exception:
+            pass
+        close_pool()
+        pool = _get_pool()
+        conn = pool.getconn()
+
     try:
         yield conn
         conn.commit()
+    except psycopg2.InterfaceError:
+        # Connection died mid-use — nuke the pool so the next caller reconnects.
+        close_pool()
+        raise
     except Exception:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         raise
     finally:
-        pool.putconn(conn)
+        try:
+            pool.putconn(conn)
+        except Exception:
+            pass
 
 
 @contextmanager

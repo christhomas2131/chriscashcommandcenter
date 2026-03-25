@@ -197,7 +197,11 @@ def migrate() -> None:
         for stmt in ddl_statements:
             cur.execute(stmt)
         for stmt in _SAFE_MIGRATIONS:
+            # Use a savepoint so a failed ALTER (column already exists) doesn't
+            # abort the entire transaction.
+            cur.execute("SAVEPOINT safe_migration")
             try:
                 cur.execute(stmt)
+                cur.execute("RELEASE SAVEPOINT safe_migration")
             except Exception:
-                pass  # column already exists or other benign error
+                cur.execute("ROLLBACK TO SAVEPOINT safe_migration")
